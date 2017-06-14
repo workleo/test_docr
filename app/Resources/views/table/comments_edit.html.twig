@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block body_id 'blog_product_show' %}
+
+{% block main %}
+    <h1>{{ product.nme }}</h1>
+
+
+    {{ product.price }}
+    {{ product.descrition|md2html }}
+
+    {{ include('blog/_product_tags.html.twig') }}
+
+    <div id="product-add-comment" class="well">
+            {{ render(controller('AppBundle:Product:commentForm', {'id': product.id})) }}
+    </div>
+
+    <h3>
+        <i class="fa fa-comments" aria-hidden="true"></i> {{ 'product.num_comments'|transchoice(product.comments|length) }}
+    </h3>
+
+    {% for comment in product.comments %}
+        <div class="row product-comment">
+            <a name="comment_{{ comment.id }}"></a>
+            <h4 class="col-sm-3">
+                <strong>{{ comment.author.fullName }}</strong> {{ 'product.commented_on'|trans }}
+                {# it's not mandatory to set the timezone in localizeddate(). This is done to
+                   avoid errors when the 'intl' PHP extension is not available and the application
+                   is forced to use the limited "intl polyfill", which only supports UTC and GMT #}
+                <strong>{{ comment.publishedAt|localizeddate('medium', 'short', null, 'UTC') }}</strong>
+            </h4>
+            <div class="col-sm-9">
+                {{ comment.content|md2html }}
+            </div>
+        </div>
+    {% else %}
+        <div class="product-comment">
+            <p>{{ 'product.no_comments'|trans }}</p>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+
+
+{% block sidebar %}
+
+    <div class="section">
+        <a href="{{ path('product_show', {id: product.id}) }}" class="btn btn-lg btn-block btn-success">
+            <i class="fa fa-eye" aria-hidden="true"></i> Show product
+        </a>
+    </div>
+
+    <div class="section actions">
+        {{ include('table/_delete_form.html.twig', {product: product}, with_context = false) }}
+    </div>
+
+    {% if include_back_to_home_link|default(false) %}
+        <a href="{{ path('product_index') }}" class="btn btn-link">
+            <i class="fa fa-list-alt" aria-hidden="true"></i> BACK TO LIST
+        </a>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}

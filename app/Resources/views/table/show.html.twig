@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block body_id 'product_show' %}
+
+{% block main %}
+    <h1>{{ product.name }}</h1>
+
+    <div class="well">
+        <p class="m-b-0"><strong>Price</strong>: {{ product.price }}</p>
+    </div>
+
+    {{ product.description }}
+
+    {{ include('table/_product_tags.html.twig') }}
+
+    <div class="row">
+        <a href="{{ path('product_index') }}" class="btn btn-link">
+            <i class="fa fa-list-alt" aria-hidden="true"></i> BACK TO LIST
+        </a>
+    </div>
+
+{% endblock %}
+
+{% block sidebar %}
+    <div class="section">
+        <a href="{{ path('product_edit', {id: product.id}) }}" class="btn btn-lg btn-block btn-success">
+            <i class="fa fa-edit" aria-hidden="true"></i> Edit product
+        </a>
+    </div>
+
+    <div class="section">
+        {{ include('table/_delete_form.html.twig', {product: product}, with_context = false) }}
+    </div>
+
+
+
+    {{ parent() }}
+
+{% endblock %}

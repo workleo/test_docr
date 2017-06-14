@@ -1,0 +1,9 @@
+{% if not product.tags.empty %}
+    <p class="product-tags">
+        {% for tag in product.tags %}
+            <span class="label label-default">
+                <i class="fa fa-tag"></i> {{ tag.tagName }}
+            </span>
+        {% endfor %}
+    </p>
+{% endif %}
