@@ -1,0 +1,432 @@
+
+http://symfony.com/blog/the-symfony-demo-application-three-months-later
+https://github.com/symfony/symfony-demo
+
+
+
+Полезности :
+php bin/console server:start 127.0.0.1:8000
+php bin/console server:stop
+
+composer require symfony/assetic-bundle
+php bin/console cache:clear
+php bin/console assets:install
+php bin/console cache:clear --env=prod --no-debug
+
+php bin/console assetic:dump  ???????
+php bin/console assets:install --symlink --relative
+composer remove symfony/form
+
+php bin/console cache:clear --env=dev
+php bin/console cache:clear --env=prod --no-debug
+php bin/console assets:install web --symlink
+
+====================================================================
+
+
+Идем в папку где создаем ПАПКУ ПРОЕКТА (например test_dcr). Запускаем
+в консоли :  (-vvv -чтобы видеть процесс)
+composer create-project symfony/framework-standard-edition test_dcr -vvv  
+...
+В конце процесса отвечаем на вопросы :
+
+Creating the "app/config/parameters.yml" file
+Some parameters are missing. Please provide them.
+database_host (127.0.0.1): 127.0.0.1
+database_port (null): 
+database_name (symfony): mysqlite.db
+database_user (root): sa
+database_password (null): MASTERKEY
+mailer_transport (smtp): smtp
+mailer_host (127.0.0.1): 127.0.0.1
+mailer_user (null): 
+mailer_password (null): 
+secret (ThisTokenIsNotSoSecretChangeIt): b4867c0b956d4c5b904572d79c4e1d130380ff5    
+==================================
+
+Открываем проект в PHPStrom редактируем файлы:
+	
+# app/config/parameters.yml				 
+parameters:
+    database_driver: pdo_sqlite
+    database_host: 127.0.0.1
+    database_port: null
+    database_name: mysqlite.db
+    database_user: sa
+    database_password: MASTERKEY
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_user: null
+    mailer_password: null
+    secret: b4867c0b956d4c5b904572d79c4e1d130380ff5
+    database_path: data/mysqlite.db                    # ДОБАВИЛ ОТНОСИТЕЛНЫЙ '%kernel.project_dir%/src/ путь к базе
+
+
+========
+/app/config/config.yml
+# Doctrine Configuration
+doctrine:
+    dbal:
+        driver: '%database_driver%'  #кавычки не убираем !!!
+        host: '%database_host%'
+        port: '%database_port%'
+        dbname: '%database_name%'
+        user: '%database_user%'
+        password: '%database_password%'
+        charset: UTF8                   #оставляем UTF8 игры с utf8mb4 для MYSQL смотри http://symfony.com/doc/current/doctrine.html
+        # if using pdo_sqlite as your database driver:
+        #   1. add the path in parameters.yml
+        #     e.g. database_path: "%kernel.project_dir%/var/data/data.sqlite"
+        #   2. Uncomment database_path in parameters.yml.dist      ЭТОГО НЕ ДЕЛАЛ
+        #   3. Uncomment next line:
+        #path: '%database_path%'
+        path: '%kernel.project_dir%/src/%database_path%' #Здесь указан АБСОЛЮТНЫЙ ПУТЬ БАЗЕ+database_path из parameters.yml
+
+======================
+Создаем собственно файл базы данных (может ругаться на отсутствие папки data, тогда перед вызовом команды создадим ее отдельно)
+
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ php bin/console doctrine:database:create 
+Created database /home/leo/works/PHP/Symfony/DOCTRINE/PRO/test_dcr/src/data/mysqlite.db for connection named default
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ 
+
+P.S>  mysqlite.db имеет размер 0 bytes - это нормально
+==========
+Создем entity-s. Можно самому ручкаи в PHPStorm или командой в диалоге:
+
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ php bin/consolphp bin/console doctrine:database:create e doctrine:generate:entity
+  Welcome to the Doctrine2 entity generator  
+                                             
+This command helps you generate Doctrine2 entities.
+
+First, you need to give the entity name you want to generate.
+You must use the shortcut notation like AcmeBlogBundle:Post.
+
+The Entity shortcut name: AppBundle:Product   # дает подсказку , а имя для entity "Product" придумываем сами
+
+Determine the format to use for the mapping information.
+Configuration format (yml, xml, php, or annotation) [annotation]: annotation
+# php наверно просто создаст class, а annotation class + repository
+
+Instead of starting with a blank entity, you can add some fields now.
+Note that the primary key will be added automatically (named id).    # id создается по умолчанию
+
+Available types: array, simple_array, json_array, object, 
+boolean, integer, smallint, bigint, string, text, datetime, datetimetz, 
+date, time, decimal, float, binary, blob, guid.
+
+New field name (press <return> to stop adding fields): id
+ Field "id" is already defined. 
+
+New field name (press <return> to stop adding fields): name
+Field type [string]: 
+Field length [255]: 100
+Is nullable [false]: 
+Unique [false]: 
+
+New field name (press <return> to stop adding fields): price
+Field type [string]: decimal
+Precision [10]: 
+Scale: 2
+Is nullable [false]: 
+Unique [false]: 
+
+New field name (press <return> to stop adding fields): description             
+Field type [string]: text
+Is nullable [false]: true
+Unique [false]: 
+
+New field name (press <return> to stop adding fields):                      
+  Entity generation                       
+  created ./src/AppBundle/Entity/Product.php
+> Generating entity class src/AppBundle/Entity/Product.php: OK!
+> Generating repository class src/AppBundle/Repository/ProductRepository.php: OK!                                         
+  Everything is OK! Now get to work :).                                          
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ 
+
+PS.--------- annotation помимо 
+src/AppBundle/Entity/Product.php
+создает еще
+src/AppBundle/Repository/ProductRepository.php
+mysqlite.db пока все еще имеет размер 0 bytes - это нормально. Entity - это классы проекта,
+физически таблиц в базе пока нет
+
+
+
+------
+php bin/console doctrine:generate:entity
+
+                                             
+  Welcome to the Doctrine2 entity generator  
+                                             
+
+
+This command helps you generate Doctrine2 entities.
+
+First, you need to give the entity name you want to generate.
+You must use the shortcut notation like AcmeBlogBundle:Post.
+
+The Entity shortcut name: AppBundle:Comment
+
+Determine the format to use for the mapping information.
+
+Configuration format (yml, xml, php, or annotation) [annotation]: php
+
+Instead of starting with a blank entity, you can add some fields now.
+Note that the primary key will be added automatically (named id).
+
+Available types: array, simple_array, json_array, object, 
+boolean, integer, smallint, bigint, string, text, datetime, datetimetz, 
+date, time, decimal, float, binary, blob, guid.
+
+# New field name (press <return> to stop adding fields): product_id   НЕ НАДО
+# Field type [integer]: 
+# Is nullable [false]: 
+# Unique [false]: 
+
+New field name (press <return> to stop adding fields): content
+Field type [string]: text
+Is nullable [false]: 
+Unique [false]: 
+
+New field name (press <return> to stop adding fields): publishedAt
+Field type [string]: datetime
+Is nullable [false]: true
+Unique [false]: 
+
+New field name (press <return> to stop adding fields): 
+
+                     
+  Entity generation  
+                     
+
+  created ./src/AppBundle/Entity/Comment.php
+  created ./src/AppBundle/Resources/config/doctrine/
+  created ./src/AppBundle/Resources/config/doctrine/Comment.orm.php
+> Generating entity class src/AppBundle/Entity/Comment.php: OK!
+> Generating repository class src/AppBundle/Repository/CommentRepository.php: OK!
+> Generating mapping file src/AppBundle/Resources/config/doctrine/Comment.orm.php: OK!
+
+------------
+
+php bin/console doctrine:generate:entity
+
+                                             
+  Welcome to the Doctrine2 entity generator  
+                                             
+
+
+This command helps you generate Doctrine2 entities.
+
+First, you need to give the entity name you want to generate.
+You must use the shortcut notation like AcmeBlogBundle:Post.
+
+The Entity shortcut name: AppBundle
+ The entity name isn't valid ("AppBundle" given, expecting something like AcmeBlogBundle:Blog/Post) 
+The Entity shortcut name: AppBundle:Tag
+
+Determine the format to use for the mapping information.
+
+Configuration format (yml, xml, php, or annotation) [annotation]: annotation
+
+Instead of starting with a blank entity, you can add some fields now.
+Note that the primary key will be added automatically (named id).
+
+Available types: array, simple_array, json_array, object, 
+boolean, integer, smallint, bigint, string, text, datetime, datetimetz, 
+date, time, decimal, float, binary, blob, guid.
+
+New field name (press <return> to stop adding fields): tagName         
+Field type [string]: 
+Field length [255]: 
+Is nullable [false]: 
+Unique [false]: 
+
+New field name (press <return> to stop adding fields): 
+
+                     
+  Entity generation  
+                     
+
+  created ./src/AppBundle/Entity/Tag.php
+> Generating entity class src/AppBundle/Entity/Tag.php: OK!
+> Generating repository class src/AppBundle/Repository/TagRepository.php: OK!
+
+                                         
+  Everything is OK! Now get to work :).  
+                                         
+-----------------
+
+
+==========
+Теперь можно создать непосредствнно таблицы в базе
+
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ php bin/console doctrine:schema:update 
+
+ATTENTION: This operation should not be executed in a production environment.
+           Use the incremental update to detect changes during development and use
+           the SQL DDL provided to manually update your database in production.
+
+# Операцию не советуют запускать в production environment
+# И если запускать то с ключами :
+
+The Schema-Tool would execute "1" queries to update the database.
+Please run the operation by passing one - or both - of the following options:
+    doctrine:schema:update --force to execute the command
+    doctrine:schema:update --dump-sql to dump the SQL statements to the screen
+
+
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ 
+php bin/console doctrine:schema:update --force --dump-sql
+php bin/console doctrine:schema:update --force --complete --dump-sql
+
+
+CREATE TABLE product (id INTEGER NOT NULL, name VARCHAR(100) NOT NULL, price NUMERIC(10, 2) NOT NULL, description CLOB DEFAULT NULL, PRIMARY KEY(id));
+
+Updating database schema...
+Database schema updated successfully! "1" query was executed
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ 
+
+
+P.S. если ругается на No Metadata Classes to process.
+чистим кэш
+php bin/console cache:clear --env=dev
+php bin/console cache:clear --env=prod --no-debug
+или что помогло в app/config/config.yml
+orm:
+        auto_generate_proxy_classes: '%kernel.debug%'
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
+        mappings:
+                AppBundle:
+                    type: annotation
+                    is_bundle: false
+                    dir: %kernel.root_dir%/../src/AppBundle/Entity/
+                    prefix: AppBundle\Entity
+                    alias: AppBundle
+
+==================
+Валидация созданной схемы
+
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ php bin/console doctrine:schema:validate
+[Mapping]  OK - The mapping files are correct.
+[Database] OK - The database schema is in sync with the mapping files.
+leo@leo ~/works/PHP/Symfony/DOCTRINE/PRO/test_dcr $ 
+==============
+
+php bin/console doctrine:generate:entities AppBundle/Entity/Product
+ничего не дало (все уже было создано) Похоже имеет смысл запускать если классы в Entity создавал ручками 
+========================
+
+<?php
+
+namespace AppBundle\Controller;
+
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+
+use AppBundle\Entity\Product;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\Response;
+
+
+class DefaultController extends Controller
+{
+  
+    /**
+     * @Route("/index", name="index")      # Это важно так как в оригинальном все DefaultController-е все закрученно
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+
+    public function createAction(EntityManagerInterface $em)
+    {
+        // or fetch the em via the container
+        // $em = $this->get('doctrine')->getManager();
+
+        $product = new Product();
+        $product->setName('Keyboard');
+        $product->setPrice(19.99);
+        $product->setDescription('Ergonomic and stylish!');
+
+        // tells Doctrine you want to (eventually) save the Product (no queries yet)
+        $em->persist($product);
+
+        // actually executes the queries (i.e. the INSERT query)
+        $em->flush();
+
+        //$response = new Response();
+        //$response->setStatusCode(200);   
+
+        return new Response('Saved new product with id '.$product->getId());
+    }
+
+
+    // if you have multiple entity managers, use the registry to fetch them
+    public function editAction(ManagerRegistry $doctrine)
+    {
+        $em = $doctrine->getManager();
+       // $em2 = $doctrine->getManager('other_connection')
+}
+}
+
+Пробный запуск 
+
+====================
+
+После изменений и composer update
+app/config/config.yml
+
+# Doctrine Configuration
+doctrine:
+    dbal:
+       # driver: '%database_driver%'
+        driver: 'pdo_sqlite'
+        host: '%database_host%'
+        port: '%database_port%'
+        dbname: '%database_name%'
+        user: '%database_user%'
+        password: '%database_password%'
+        path: '%kernel.project_dir%/src/data//mysqlite.db'
+        charset: UTF8
+        # if using pdo_sqlite as your database driver:
+        #   1. add the path in parameters.yml
+        #     e.g. database_path: "%kernel.project_dir%/var/data/data.sqlite"
+        #   2. Uncomment database_path in parameters.yml.dist
+        #   3. Uncomment next line:
+        #path: '%database_path%'
+        #path: '%kernel.project_dir%/src/%database_path%'
+
+
+
+    orm:
+        auto_generate_proxy_classes: '%kernel.debug%'
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
+        mappings:
+                AppBundle:
+                    type: annotation
+                    is_bundle: false
+                    dir: %kernel.root_dir%/../src/AppBundle/Entity/
+                    prefix: AppBundle\Entity
+                    alias: AppBundle
+
+
+app/config/parameters.yml
+
+# This file is auto-generated during the composer install
+parameters:
+    database_host: 127.0.0.1
+    database_port: null
+    database_name: mysqlite.db
+    database_user: sa
+    database_password: MASTERKEY
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_user: null
+    mailer_password: null
+    secret: b4867c0b956d4c5b904572d79c4e1d130380ff5
+
+====
+
